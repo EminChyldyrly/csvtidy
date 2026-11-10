@@ -1,0 +1,6 @@
+/csvtidy
+/csvtidy.exe
+*.test
+*.out
+.idea/
+.vscode/
