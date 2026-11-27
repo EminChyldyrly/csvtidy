@@ -110,8 +110,10 @@ func cmdClean(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if !ok {
 		return 2
 	}
-	if utf8.RuneCountInString(*delim) != 1 {
-		fmt.Fprintln(stderr, "ошибка: -delim должен быть одним символом")
+	r, _ := utf8.DecodeRuneInString(*delim)
+	if utf8.RuneCountInString(*delim) != 1 || !utf8.ValidString(*delim) ||
+		r == 0 || r == '"' || r == '\r' || r == '\n' || r == utf8.RuneError {
+		fmt.Fprintln(stderr, "ошибка: -delim должен быть одним допустимым символом-разделителем CSV")
 		return 2
 	}
 	t, ok := load(file, stdin, stderr)
@@ -131,7 +133,6 @@ func cmdClean(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		defer f.Close()
 		w = f
 	}
-	r, _ := utf8.DecodeRuneInString(*delim)
 	if err := t.Write(w, r); err != nil {
 		fmt.Fprintln(stderr, "ошибка записи:", err)
 		return 1

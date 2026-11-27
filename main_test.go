@@ -100,3 +100,19 @@ func TestRound2(t *testing.T) {
 		}
 	}
 }
+
+func TestInvalidDelimiterPreservesOutput(t *testing.T) {
+	output := filepath.Join(t.TempDir(), "out.csv")
+	const original = "existing content"
+	if err := os.WriteFile(output, []byte(original), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	code, _, _ := runCmd(t, messy, "clean", "-delim", "\n", "-o", output, "-")
+	if code != 2 {
+		t.Fatalf("exit code = %d, want 2", code)
+	}
+	got, err := os.ReadFile(output)
+	if err != nil || string(got) != original {
+		t.Fatalf("output = %q, error = %v", got, err)
+	}
+}
